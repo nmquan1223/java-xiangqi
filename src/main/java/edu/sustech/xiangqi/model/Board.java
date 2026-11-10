@@ -98,7 +98,44 @@ public class Board {
 
         // TODO: Chỉ đổi lượt sau khi nước đi thành công và quyết định trạng thái như chiếu hết, thắng hoặc thua.
 
+        if (areGeneralsFacing()) {
+            pieces[fromRow][fromCol] = piece;
+            pieces[toRow][toCol] = target;
+            return false;
+        }
         redTurn = !redTurn; // Đổi turn sau 1 move
+        return true;
+    }
+
+    //Implement facing generals - check xem có vướng mặt tướng không
+    private boolean areGeneralsFacing() {
+        int redRow = -1, redCol = -1;
+        int blackRow = -1, blackCol = -1;
+        // Tìm 2 con tướng
+        for (int row = 0; row < ROWS; row++) {
+            for (int col = 3; col <= 5; col++) {
+                Piece piece = pieces[row][col];
+                if (piece instanceof GeneralPiece) { //Tìm tọa độ của quân tướng = instanceof
+                    if (piece.isRed()) {
+                        redRow = row;
+                        redCol = col;
+                    } else {
+                        blackRow = row;
+                        blackCol = col;
+                    }
+                }
+            }
+        }
+        // Check xem cả 2 con tướng có chung 1 cột ko
+        if (redRow == -1 || blackRow == -1 || redCol != blackCol) {
+            return false;
+        }
+        // Check xem có quân giữa 2 quân tướng không
+        for (int row = blackRow + 1; row < redRow; row++) {
+            if (pieces[row][redCol] != null) {
+                return false;
+            }
+        }
         return true;
     }
 }
