@@ -1,11 +1,5 @@
 package edu.sustech.xiangqi;
 
-<<<<<<< Updated upstream
-public class Main {
-    public static void main(String[] args) {
-        Game game = new Game();
-        game.printBoard();
-=======
 import edu.sustech.xiangqi.controller.ChessController;
 import edu.sustech.xiangqi.model.Board;
 import edu.sustech.xiangqi.view.ChessFrame;
@@ -25,6 +19,5 @@ public class Main {
                 frame.setVisible(true);
             }
         });
->>>>>>> Stashed changes
     }
 }
