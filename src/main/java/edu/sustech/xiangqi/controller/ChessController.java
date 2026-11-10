@@ -9,12 +9,12 @@ import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-// 处理点击和选中状态
+// Xử lý trạng thái nhấp chuột và lựa chọn
 public class ChessController extends MouseAdapter {
     private final Board board;
     private final BoardPanel boardPanel;
 
-    // 默认 -1 没有选中任何棋子
+    // Mặc định -1 có nghĩa là không có mảnh nào được chọn.
     private int selectedRow = -1;
     private int selectedCol = -1;
 
@@ -43,13 +43,13 @@ public class ChessController extends MouseAdapter {
 
         Piece clickedPiece = board.getPieceAt(row, col);
         if (selectedRow == -1) {
-            if (clickedPiece != null) {
+            if (clickedPiece != null && clickedPiece.isRed() == board.isRedTurn()) { //Thêm cái check turn của bên nào
                 select(row, col);
             }
             return;
         }
 
-        // 点击另一枚己方棋子时切换选择
+        // Chuyển đổi lựa chọn khi nhấp chuột vào một quân cờ đồng minh khác.
         Piece selectedPiece = board.getPieceAt(selectedRow, selectedCol);
         if (clickedPiece != null && selectedPiece != null
                 && clickedPiece.isRed() == selectedPiece.isRed()) {
@@ -57,7 +57,7 @@ public class ChessController extends MouseAdapter {
             return;
         }
 
-        // 移动失败时保留选择，用户可以继续选择其他落点
+        // Nếu thao tác di chuyển thất bại, người dùng có thể giữ nguyên lựa chọn của mình và chọn một điểm đến khác.
         if (board.tryMove(selectedRow, selectedCol, row, col)) {
             clearSelection();
         }

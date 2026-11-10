@@ -7,6 +7,11 @@ public class Board {
     public static final int ROWS = 10;
     public static final int COLS = 9;
 
+    private boolean redTurn = true; //Check turn của bên nào
+    public boolean isRedTurn() { //Getter để dùng trong chess controller
+        return redTurn;
+    }
+
     // Lưu trữ vị trí quân cờ
     private final Piece[][] pieces = new Piece[ROWS][COLS];
 
@@ -14,16 +19,37 @@ public class Board {
         initializePieces();
     }
 
-    private void initializePieces() { // Tạo quân cờ đỏ
-        // Red pieces
-        pieces[9][3] = new AdvisorPiece(true);
-        pieces[9][4] = new GeneralPiece(true);
-        pieces[9][5] = new AdvisorPiece(true);
-
-        // Black pieces
+    private void initializePieces() {
+        // khởi tạo mấy quân của đen ở row 0
+        pieces[0][0] = new RookPiece(false);
+        pieces[0][1] = new HorsePiece(false);
+        pieces[0][2] = new ElephantPiece(false);
         pieces[0][3] = new AdvisorPiece(false);
         pieces[0][4] = new GeneralPiece(false);
         pieces[0][5] = new AdvisorPiece(false);
+        pieces[0][6] = new ElephantPiece(false);
+        pieces[0][7] = new HorsePiece(false);
+        pieces[0][8] = new RookPiece(false);
+        // row 9 quân đỏ
+        pieces[9][0] = new RookPiece(true);
+        pieces[9][1] = new HorsePiece(true);
+        pieces[9][2] = new ElephantPiece(true);
+        pieces[9][3] = new AdvisorPiece(true);
+        pieces[9][4] = new GeneralPiece(true);
+        pieces[9][5] = new AdvisorPiece(true);
+        pieces[9][6] = new ElephantPiece(true);
+        pieces[9][7] = new HorsePiece(true);
+        pieces[9][8] = new RookPiece(true);
+        // Quân pháo
+        pieces[2][1] = new CannonPiece(false);
+        pieces[2][7] = new CannonPiece(false);
+        pieces[7][1] = new CannonPiece(true);
+        pieces[7][7] = new CannonPiece(true);
+        // Quân tốt
+        for (int col = 0; col < COLS; col += 2) {
+            pieces[3][col] = new SoldierPiece(false);
+            pieces[6][col] = new SoldierPiece(true);
+        }
     }
 
     public boolean isInside(int row, int col) {
@@ -44,16 +70,21 @@ public class Board {
         if (fromRow == toRow && fromCol == toCol) {
             return false;
         }
-
         Piece piece = getPieceAt(fromRow, fromCol);
         if (piece == null) {
             return false;
         }
 
         // TODO: Add a turn-based check to ensure that only the current player can move their own pieces.
+        // Done
+        if (piece.isRed() != redTurn) {
+            return false;
+        }
 
         // TODO: Phân biệt quân cờ của mình và quân cờ của đối phương, rồi bắt chúng.
-        if (getPieceAt(toRow, toCol) != null) {
+        // Done
+        Piece target = getPieceAt(toRow, toCol);
+        if (target != null && target.isRed() == piece.isRed()){ //Nếu cùng phe thì return false
             return false;
         }
 
@@ -66,6 +97,8 @@ public class Board {
         pieces[toRow][toCol] = piece;
 
         // TODO: Chỉ đổi lượt sau khi nước đi thành công và quyết định trạng thái như chiếu hết, thắng hoặc thua.
+
+        redTurn = !redTurn; // Đổi turn sau 1 move
         return true;
     }
 }
