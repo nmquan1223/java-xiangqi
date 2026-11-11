@@ -19,7 +19,7 @@ public class RookPiece extends Piece {
             }
         }
         else { //Check chắn đường khi đi ngang
-            int step = toRow > fromRow ? 1 : -1;
+            int step = toCol > fromCol ? 1 : -1;
             for (int col=fromCol+step; col!=toCol; col+=step) {
                 if (board.getPieceAt(fromRow, col) != null) {
                     return false;
