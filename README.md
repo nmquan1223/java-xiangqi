@@ -1,2 +1,3 @@
-# xiangqi-game
-Final Project for CS109 SUSTech
+# Chinese Chess in Java
+Fully functional Chinese Chess game written by Java
+Features including: core gameplay, account login, save and undo.
