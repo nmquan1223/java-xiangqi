@@ -8,6 +8,13 @@ public class Board {
     public static final int COLS = 9;
 
     private boolean redTurn = true; //Check turn của bên nào
+
+    private Boolean winnerIsRed = null; //Check xem đã hết ván chưa
+    //QUAN TRỌNG: dùng Boolean thay vì boolean vì Boolean có thể chứa "null"
+    public Boolean getWinnerIsRed() { //Getter
+        return winnerIsRed;
+    }
+
     public boolean isRedTurn() { //Getter để dùng trong chess controller
         return redTurn;
     }
@@ -64,6 +71,10 @@ public class Board {
     }
 
     public boolean tryMove(int fromRow, int fromCol, int toRow, int toCol) {
+        if (winnerIsRed != null) { //Check xem đã hết cờ chưa
+            return false;
+        }
+
         if (!isInside(fromRow, fromCol) || !isInside(toRow, toCol)) {
             return false;
         }
@@ -88,22 +99,33 @@ public class Board {
             return false;
         }
 
+        // Chống ăn thẳng con tướng
+        if (target instanceof GeneralPiece) {
+            return false;
+        }
+
         if (!piece.canMove(this, fromRow, fromCol, toRow, toCol)) {
             return false;
         }
 
-        // TODO: Sau khi kiểm tra xem các tướng lĩnh và chỉ huy của chúng ta có an toàn hay không.
         pieces[fromRow][fromCol] = null;
         pieces[toRow][toCol] = piece;
 
         // TODO: Chỉ đổi lượt sau khi nước đi thành công và quyết định trạng thái như chiếu hết, thắng hoặc thua.
-
-        if (areGeneralsFacing()) {
+        //before: if (isInCheck(piece.isRed()))
+        if (isInCheck(piece.isRed())) {
             pieces[fromRow][fromCol] = piece;
             pieces[toRow][toCol] = target;
             return false;
         }
-        redTurn = !redTurn; // Đổi turn sau 1 move
+        redTurn = !redTurn; //Đổi turn sau 1 move
+
+        if (!hasAnyLegalMove(redTurn)) { //Check xem còn move ko, nếu ko thì winnerIsRed là bên thắng
+            winnerIsRed = piece.isRed();
+            //VD Đỏ vừa đi nước chiếu hết
+            //-> redTurn = false vì đến bên đen
+            //ko có legalmove -> if hoạt động -> winnerIsRed = phe thắng
+        }
         return true;
     }
 
@@ -137,5 +159,81 @@ public class Board {
             }
         }
         return true;
+    }
+
+    // TODO: Sau khi kiểm tra xem các tướng của chúng ta có an toàn hay không.
+    // Done
+    public boolean isInCheck(boolean red) {
+        int generalRow = -1;
+        int generalCol = -1;
+
+        //Find general - Tìm con tướng
+        for (int i=0; i<ROWS; i++) {
+            for (int j=0; j<COLS; j++) {
+                Piece p = pieces[i][j];
+
+                if (p instanceof GeneralPiece && p.isRed() == red) {
+                    generalRow = i;
+                    generalCol = j;
+                }
+            }
+        }
+
+        if (generalRow == -1) return true;
+
+        //Kiểm tra xem có quân nào của địch ăn được tướng ko
+        for (int i=0; i<ROWS; i++) {
+            for (int j=0; j<COLS; j++) {
+                Piece enemy = pieces[i][j];
+
+                if (enemy != null && enemy.isRed() != red) {
+                    if (enemy.canMove(this, i, j, generalRow, generalCol)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        //Kiểm tra facing generals
+        return areGeneralsFacing();
+    }
+
+    //Check xem có bị checkmate không
+    public boolean hasAnyLegalMove(boolean red) {
+        //Tìm quân của phe "red" này
+        for (int fromRow=0; fromRow<ROWS; fromRow++) {
+            for (int fromCol=0; fromCol<COLS; fromCol++) {
+                Piece piece = pieces[fromRow][fromCol];
+                if (piece ==null || piece.isRed() !=red) {
+                    continue;
+                }
+                //Thử tất cả các nước
+                for (int toRow=0; toRow<ROWS; toRow++) {
+                    for (int toCol=0; toCol<COLS; toCol++) {
+                        Piece target = pieces[toRow][toCol];
+                        if (target != null && target.isRed() == red) { //Nếu ko có quân thuộc phe cần kiểm tra
+                            continue;
+                        }
+                        if (target instanceof GeneralPiece) { //Target là tướng thì skip
+                            continue;
+                        }
+                        if (!piece.canMove(this, fromRow, fromCol, toRow, toCol)) { //ko thể canmove thì skip
+                            continue;
+                        }
+                        // Giả lập đi thử
+                        pieces[fromRow][fromCol] = null;
+                        pieces[toRow][toCol] = piece;
+                        boolean safe = !isInCheck(red); //Nếu tướng đang bị chiếu mà move thì safe = false
+                        // Rollback
+                        pieces[fromRow][fromCol] = piece;
+                        pieces[toRow][toCol] = target;
+                        if (safe) { //Nếu safe thì đi được
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 }
